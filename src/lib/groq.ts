@@ -85,10 +85,8 @@ The JSON must strictly follow this schema:
 }
 
 function resolveApiKey(localStorageKey: string): string {
-  // Try Lovable/Vite env var first (set VITE_GROQ_API_KEY in Lovable secrets)
-  const envKey = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GROQ_API_KEY) || '';
+  const envKey = (import.meta as any).env?.VITE_GROQ_API_KEY || '';
   if (envKey && envKey.length > 10) return envKey;
-  // Fall back to user-supplied key stored in localStorage
   return localStorageKey;
 }
 
@@ -107,7 +105,7 @@ export async function callGroq(apiKey: string, input: MedInput): Promise<MedPres
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
       max_tokens: 5000,
