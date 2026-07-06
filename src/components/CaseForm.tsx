@@ -11,201 +11,182 @@ interface CaseFormProps {
   apiKeySet: boolean;
 }
 
-export const CaseForm: React.FC<CaseFormProps> = ({
-  input,
-  onInputChange,
-  onSubmit,
-  loading,
-  apiKeySet,
-}) => {
+const SECTION_COLORS = ['#6366F1','#0891B2','#059669','#EA580C','#7C3AED','#DC2626'];
+
+const SectionHeader = ({ icon, title, color }: { icon: string; title: string; color: string }) => (
+  <div className="flex items-center gap-3 mb-5">
+    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+      style={{ background: `linear-gradient(135deg, ${color}25, ${color}10)`, border: `1.5px solid ${color}40` }}>
+      {icon}
+    </div>
+    <h3 className="text-base font-bold" style={{ color: '#1e293b' }}>{title}</h3>
+    <div className="flex-1 h-px" style={{ background: `linear-gradient(to right, ${color}40, transparent)` }} />
+  </div>
+);
+
+export const CaseForm: React.FC<CaseFormProps> = ({ input, onInputChange, onSubmit, loading, apiKeySet }) => {
+  const [hoverSubmit, setHoverSubmit] = React.useState(false);
   return (
     <div className="space-y-8">
-      {/* Specialty Selection */}
-      <div>
-        <SpecialtySelector 
-          selectedId={input.specialty_id} 
-          onSelect={(id) => onInputChange('specialty_id', id)} 
-        />
+      {/* Specialty */}
+      <div className="animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+        <SpecialtySelector selectedId={input.specialty_id} onSelect={id => onInputChange('specialty_id', id)} />
       </div>
 
       {/* Demographics */}
-      <div>
-        <h3 className="text-lg font-bold text-[#3D2B1F] mb-4">Patient Demographics</h3>
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '60ms', background: 'linear-gradient(135deg,rgba(99,102,241,0.05),rgba(99,102,241,0.02))', border: '1.5px solid rgba(99,102,241,0.15)' }}>
+        <SectionHeader icon="👤" title="Patient Demographics" color={SECTION_COLORS[0]} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="input-group">
-            <label className="label">Full Name</label>
-            <input
-              type="text"
-              className="field"
-              placeholder="Mr. John Doe"
-              value={input.name}
-              onChange={(e) => onInputChange('name', e.target.value)}
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="label">Age (years)</label>
-            <input
-              type="number"
-              className="field"
-              placeholder="45"
-              value={input.age}
-              onChange={(e) => onInputChange('age', e.target.value)}
-            />
-          </div>
-
+          {[
+            { key: 'name', label: 'Full Name', placeholder: 'Mr. John Doe', type: 'text' },
+            { key: 'age', label: 'Age (years)', placeholder: '45', type: 'number' },
+          ].map(f => (
+            <div key={f.key} className="input-group">
+              <label className="label">{f.label}</label>
+              <input type={f.type} className="field" placeholder={f.placeholder}
+                value={input[f.key as keyof MedInput] as string}
+                onChange={e => onInputChange(f.key as keyof MedInput, e.target.value)} />
+            </div>
+          ))}
           <div className="input-group">
             <label className="label">Gender</label>
-            <select
-              className="field"
-              value={input.gender}
-              onChange={(e) => onInputChange('gender', e.target.value)}
-            >
+            <select className="field" value={input.gender} onChange={e => onInputChange('gender', e.target.value)}>
               <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option>Male</option><option>Female</option><option>Other</option>
             </select>
           </div>
-
           <div className="input-group">
             <label className="label">Occupation</label>
-            <input
-              type="text"
-              className="field"
-              placeholder="E.g., Software Engineer, Teacher"
-              value={input.occupation}
-              onChange={(e) => onInputChange('occupation', e.target.value)}
-            />
+            <input type="text" className="field" placeholder="e.g., Teacher, Engineer"
+              value={input.occupation} onChange={e => onInputChange('occupation', e.target.value)} />
           </div>
         </div>
       </div>
 
       {/* Chief Complaint */}
-      <div className="input-group">
-        <label className="label">Chief Complaint *</label>
-        <textarea
-          className="field"
-          placeholder="E.g., Chest pain, shortness of breath, palpitations..."
-          rows={3}
-          value={input.chief_complaint}
-          onChange={(e) => onInputChange('chief_complaint', e.target.value)}
-        />
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '120ms', background: 'linear-gradient(135deg,rgba(8,145,178,0.05),rgba(8,145,178,0.02))', border: '1.5px solid rgba(8,145,178,0.2)' }}>
+        <SectionHeader icon="🩺" title="Chief Complaint & Duration" color={SECTION_COLORS[1]} />
+        <div className="space-y-4">
+          <div className="input-group">
+            <label className="label">Chief Complaint <span style={{ color: '#DC2626' }}>*</span></label>
+            <textarea className="field" rows={3}
+              placeholder="e.g., Chest pain and shortness of breath for 3 days..."
+              value={input.chief_complaint} onChange={e => onInputChange('chief_complaint', e.target.value)} />
+          </div>
+          <div className="input-group">
+            <label className="label">Duration of Symptoms</label>
+            <input type="text" className="field" placeholder="e.g., 3 days, 2 weeks"
+              value={input.duration} onChange={e => onInputChange('duration', e.target.value)} />
+          </div>
+        </div>
       </div>
 
-      {/* Duration */}
-      <div className="input-group">
-        <label className="label">Duration of Symptoms</label>
-        <input
-          type="text"
-          className="field"
-          placeholder="E.g., 3 days, 2 weeks, 6 months"
-          value={input.duration}
-          onChange={(e) => onInputChange('duration', e.target.value)}
-        />
-      </div>
-
-      {/* Past Medical History */}
-      <div className="input-group">
-        <label className="label">Past Medical History</label>
-        <textarea
-          className="field"
-          placeholder="E.g., Hypertension x 5 years, Diabetes Type 2 x 3 years, Previous MI..."
-          rows={3}
-          value={input.past_medical_history}
-          onChange={(e) => onInputChange('past_medical_history', e.target.value)}
-        />
-      </div>
-
-      {/* Comorbidities */}
-      <div className="input-group">
-        <label className="label">Comorbidities</label>
-        <textarea
-          className="field"
-          placeholder="E.g., Hypertension, Diabetes, Chronic Kidney Disease, COPD..."
-          rows={2}
-          value={input.comorbidities}
-          onChange={(e) => onInputChange('comorbidities', e.target.value)}
-        />
+      {/* History */}
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '180ms', background: 'linear-gradient(135deg,rgba(5,150,105,0.05),rgba(5,150,105,0.02))', border: '1.5px solid rgba(5,150,105,0.2)' }}>
+        <SectionHeader icon="📋" title="Medical History & Comorbidities" color={SECTION_COLORS[2]} />
+        <div className="space-y-4">
+          {[
+            { key: 'past_medical_history', label: 'Past Medical History', rows: 3, placeholder: 'Hypertension × 5 yrs, Diabetes Type 2...' },
+            { key: 'comorbidities', label: 'Comorbidities', rows: 2, placeholder: 'CKD stage 3, COPD...' },
+          ].map(f => (
+            <div key={f.key} className="input-group">
+              <label className="label">{f.label}</label>
+              <textarea className="field" rows={f.rows} placeholder={f.placeholder}
+                value={input[f.key as keyof MedInput] as string}
+                onChange={e => onInputChange(f.key as keyof MedInput, e.target.value)} />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Clinical Findings */}
-      <div className="input-group">
-        <label className="label">Clinical Examination Findings</label>
-        <textarea
-          className="field"
-          placeholder="E.g., BP 150/90, HR 88, RR 20, SpO2 98%, mild edema in lower extremities..."
-          rows={4}
-          value={input.clinical_findings}
-          onChange={(e) => onInputChange('clinical_findings', e.target.value)}
-        />
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '240ms', background: 'linear-gradient(135deg,rgba(234,88,12,0.05),rgba(234,88,12,0.02))', border: '1.5px solid rgba(234,88,12,0.2)' }}>
+        <SectionHeader icon="🔍" title="Clinical Examination & Findings" color={SECTION_COLORS[3]} />
+        <div className="space-y-4">
+          <div className="input-group">
+            <label className="label">Clinical Examination Findings</label>
+            <textarea className="field" rows={4}
+              placeholder="BP 150/90 mmHg, HR 88/min, RR 20, SpO₂ 98%, mild pedal edema..."
+              value={input.clinical_findings} onChange={e => onInputChange('clinical_findings', e.target.value)} />
+          </div>
+          <div className="input-group">
+            <label className="label">Provisional / Suspected Diagnosis</label>
+            <textarea className="field" rows={2}
+              placeholder="Acute decompensated heart failure, NYHA class III..."
+              value={input.provisional_diagnosis} onChange={e => onInputChange('provisional_diagnosis', e.target.value)} />
+          </div>
+        </div>
       </div>
 
-      {/* Provisional Diagnosis */}
-      <div className="input-group">
-        <label className="label">Provisional Diagnosis / Suspected Diagnosis</label>
-        <textarea
-          className="field"
-          placeholder="E.g., Acute Coronary Syndrome, Acute Decompensated Heart Failure, Community-acquired Pneumonia..."
-          rows={3}
-          value={input.provisional_diagnosis}
-          onChange={(e) => onInputChange('provisional_diagnosis', e.target.value)}
-        />
-      </div>
-
-      {/* Current Medications */}
-      <div className="input-group">
-        <label className="label">Current Medications</label>
-        <textarea
-          className="field"
-          placeholder="E.g., Aspirin 75mg daily, Metformin 1000mg BD, Lisinopril 10mg daily..."
-          rows={3}
-          value={input.current_medications}
-          onChange={(e) => onInputChange('current_medications', e.target.value)}
-        />
-      </div>
-
-      {/* Allergies */}
-      <div className="input-group">
-        <label className="label">Drug Allergies</label>
-        <input
-          type="text"
-          className="field"
-          placeholder="E.g., Penicillin (anaphylaxis), Aspirin (GI upset)..."
-          value={input.allergies}
-          onChange={(e) => onInputChange('allergies', e.target.value)}
-        />
+      {/* Medications & Allergies */}
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '300ms', background: 'linear-gradient(135deg,rgba(124,58,237,0.05),rgba(124,58,237,0.02))', border: '1.5px solid rgba(124,58,237,0.2)' }}>
+        <SectionHeader icon="💊" title="Current Medications & Allergies" color={SECTION_COLORS[4]} />
+        <div className="space-y-4">
+          <div className="input-group">
+            <label className="label">Current Medications</label>
+            <textarea className="field" rows={3}
+              placeholder="Aspirin 75 mg OD, Metformin 1000 mg BD, Lisinopril 10 mg OD..."
+              value={input.current_medications} onChange={e => onInputChange('current_medications', e.target.value)} />
+          </div>
+          <div className="input-group">
+            <label className="label">Drug Allergies</label>
+            <input type="text" className="field" placeholder="Penicillin (anaphylaxis), Aspirin (GI upset)..."
+              value={input.allergies} onChange={e => onInputChange('allergies', e.target.value)} />
+          </div>
+        </div>
       </div>
 
       {/* Additional Notes */}
-      <div className="input-group">
-        <label className="label">Additional Clinical Notes</label>
-        <textarea
-          className="field"
-          placeholder="Any other relevant information (lab values, imaging findings, recent test results, etc.)"
-          rows={3}
-          value={input.notes}
-          onChange={(e) => onInputChange('notes', e.target.value)}
-        />
+      <div className="animate-fade-in-up p-6 rounded-2xl"
+        style={{ animationDelay: '360ms', background: 'linear-gradient(135deg,rgba(220,38,38,0.04),rgba(220,38,38,0.01))', border: '1.5px solid rgba(220,38,38,0.15)' }}>
+        <SectionHeader icon="📝" title="Additional Clinical Notes" color={SECTION_COLORS[5]} />
+        <div className="input-group">
+          <label className="label">Notes (labs, imaging, investigations done)</label>
+          <textarea className="field" rows={3}
+            placeholder="HbA1c 9.2%, eGFR 52 mL/min, Echo: EF 35%..."
+            value={input.notes} onChange={e => onInputChange('notes', e.target.value)} />
+        </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="flex gap-3 pt-4">
+      {/* Submit */}
+      <div className="animate-fade-in-up pt-2" style={{ animationDelay: '420ms' }}>
         <button
           onClick={onSubmit}
           disabled={loading || !apiKeySet || !input.specialty_id || !input.chief_complaint.trim()}
-          className="btn-primary flex items-center gap-2 flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseEnter={() => setHoverSubmit(true)}
+          onMouseLeave={() => setHoverSubmit(false)}
+          style={{
+            width: '100%', padding: '1rem 2rem',
+            background: loading || !apiKeySet || !input.specialty_id || !input.chief_complaint.trim()
+              ? '#9CA3AF'
+              : hoverSubmit
+                ? 'linear-gradient(135deg,#4F46E5,#7C3AED,#EC4899)'
+                : 'linear-gradient(135deg,#1E40AF,#6366F1,#7C3AED)',
+            backgroundSize: '200% 200%',
+            color: '#fff', fontWeight: '700', fontSize: '1.05rem',
+            borderRadius: '1rem', border: 'none', cursor: loading || !apiKeySet ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+            transition: 'all 0.3s ease',
+            boxShadow: hoverSubmit ? '0 8px 30px rgba(99,102,241,0.5)' : '0 4px 15px rgba(30,64,175,0.3)',
+            transform: hoverSubmit && !loading ? 'translateY(-2px)' : undefined,
+          }}
         >
-          <Send className="w-4 h-4" />
-          Generate Prescription
+          <Send size={18} />
+          Generate AI Prescription
         </button>
-      </div>
 
-      {!apiKeySet && (
-        <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg">
-          ⚠ Please set your Groq API key in the header to generate prescriptions.
-        </p>
-      )}
+        {!apiKeySet && (
+          <p className="text-sm text-center mt-3 px-4 py-2 rounded-xl"
+            style={{ background: 'linear-gradient(135deg,#FEF3C7,#FDE68A)', color: '#92400E', border: '1px solid #FCD34D' }}>
+            ⚠ Set your Groq API key in the header to generate prescriptions
+          </p>
+        )}
+      </div>
     </div>
   );
 };
